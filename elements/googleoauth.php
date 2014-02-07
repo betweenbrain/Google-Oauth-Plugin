@@ -95,6 +95,6 @@ class JElementGoogleoauth extends JElement
 		$url   = 'https://accounts.google.com/o/oauth2/auth?';
 		$query = http_build_query($parameters);
 
-		return '<a href="' . $url . $query . '">Get Authorization Code</a><br/><br/><br/>';
+		return JHtml::_('link', $url . $query, 'Get Authorization Code', null);
 	}
 }
