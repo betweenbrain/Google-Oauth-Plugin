@@ -26,6 +26,9 @@ class JElementGoogleoauth extends JElement
 	{
 		$this->parent       = $parent;
 		$this->db           = JFactory::getDBO();
+		$this->redirectUri  = JURI::getInstance()->toString();
+		$this->refreshToken = 'refresh.token';
+		$this->accessToken  = 'access.token';
 	}
 
 	/**
@@ -38,17 +41,28 @@ class JElementGoogleoauth extends JElement
 	 */
 	function fetchElement($name, $value, &$node, $control_name)
 	{
+		// Dynamically set plugin parameters as class properties
 		$element = $node->attributes('element');
-
 		$this->fetchPluginParameters($element);
 
+		$cacheDir = $node->attributes('cachedir');
+		$cacheDir = JPATH_SITE . '/cache/' . $cacheDir;
+		$this->checkCacheDir($cacheDir);
+	}
+
+	private function checkCacheDir($cacheDir)
+	{
+		if (!is_dir($cacheDir))
+		{
+			mkdir($cacheDir);
+		}
 	}
 
 	private function fetchPluginParameters($element)
 	{
 		// Fetch parameters via database query
-		$this->db  = JFactory::getDBO();
-		$sql = 'SELECT ' . $this->db->nameQuote('params') .
+		$this->db = JFactory::getDBO();
+		$sql      = 'SELECT ' . $this->db->nameQuote('params') .
 			' FROM ' . $this->db->nameQuote('#__plugins') .
 			' WHERE ' . $this->db->nameQuote('element') . ' = ' . $this->db->quote($element);
 		$this->db->setQuery($sql);
@@ -61,4 +75,5 @@ class JElementGoogleoauth extends JElement
 		}
 
 	}
+
 }
