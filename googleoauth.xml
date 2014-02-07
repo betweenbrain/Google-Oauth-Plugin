@@ -37,6 +37,13 @@
 		       default=""
 		       label="PLG_SYSTEM_GOOGLEOAUTH_GOOGLE_CLIENT_SECRET_LABEL"
 		       description="PLG_SYSTEM_GOOGLEOAUTH_GOOGLE_CLIENT_SECRET_DESC" />
+		<param name="permissionScope"
+		       type="textarea"
+		       rows="4"
+		       cols="60"
+		       default=""
+		       label="PLG_SYSTEM_GOOGLEOAUTH_PERMISSION_SCOPE_LABEL"
+		       description="PLG_SYSTEM_GOOGLEOAUTH_PERMISSION_SCOPE_DESC" />
 		<param type="diagnostic" element="googleoauth" cachedir="plg_googleoauth" cachefiles="access.token,refresh.token" />
 		<param name="showDiagnostic"
 		       type="list"

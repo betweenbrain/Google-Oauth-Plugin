@@ -86,7 +86,7 @@ class JElementGoogleoauth extends JElement
 		$parameters = array(
 			'client_id'       => $this->googleClientId,
 			'redirect_uri'    => $this->redirectUri,
-			'scope'           => 'https://www.googleapis.com/auth/yt-analytics.readonly',
+			'scope'           => $this->permissionScope, // https://www.googleapis.com/auth/yt-analytics.readonly
 			'response_type'   => 'code',
 			'approval_prompt' => 'force',
 			'access_type'     => 'offline'
