@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<install version="2.5" type="plugin" group="system" method="upgrade">
+
+	<author>Matt Thomas</author>
+	<authorEmail>matt@betweenbrain.com</authorEmail>
+	<authorUrl>http://betweenbrain.com</authorUrl>
+	<copyright>(C) 2014 Matt Thomas. All rights reserved.</copyright>
+	<creationDate>February 7, 2014</creationDate>
+	<description>PLG_SYSTEM_GOOGLEOAUTH_DESC</description>
+	<license>GNU/GPL v2 or later</license>
+	<name>Google Oauth</name>
+	<version>1.0</version>
+
+	<files>
+		<filename plugin="googleoauth">googleoauth.php</filename>
+		<folder>elements</folder>
+	</files>
+
+	<languages folder="languages">
+		<language tag="en-GB">en-GB/en-GB.plg_system_googleoauth.ini</language>
+	</languages>
+
+	<params addpath="/plugins/system/elements">
+		<param type="diagnostic" element="googleoauth" cachedir="plg_googleoauth" cachefiles="access.token,refresh.token" />
+		<param type="googleoauth" />
+		<param name="showDiagnostic"
+		       type="list"
+		       default="0"
+		       label="PLG_SYSTEM_GOOGLEOAUTH_SHOW_DIAGNOSTIC_LABEL"
+		       description="">
+			<option value="">No</option>
+			<option value="1">Yes</option>
+		</param>
+	</params>
+
+</install>
