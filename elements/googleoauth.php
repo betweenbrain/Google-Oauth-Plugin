@@ -26,7 +26,7 @@ class JElementGoogleoauth extends JElement
 	{
 		$this->parent       = $parent;
 		$this->db           = JFactory::getDBO();
-		$this->redirectUri  = JURI::getInstance()->toString();
+		$this->redirectUri  = JURI::base();
 		$this->refreshToken = 'refresh.token';
 		$this->accessToken  = 'access.token';
 	}
