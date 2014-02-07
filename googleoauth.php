@@ -28,6 +28,8 @@ class PlgSystemGoogleoauth extends JPlugin
 		$this->googleApiKey       = $this->params->get('googleApiKey');
 		$this->googleClientId     = $this->params->get('googleClientId');
 		$this->googleClientSecret = $this->params->get('googleClientSecret');
+		$this->accessToken        = JPATH_SITE . '/cache/plg_googleoauth/access.token';
+		$this->refreshToken       = JPATH_SITE . '/cache/plg_googleoauth/refresh.token';
 		$this->redirectUri        = JURI::base();
 	}
 
@@ -71,15 +73,14 @@ class PlgSystemGoogleoauth extends JPlugin
 				if (isset($response->access_token))
 				{
 					$this->app->enqueueMessage(JText::_('PLG_SYSTEM_GOOGLEOAUTH_GOOGLE_ACCESS_TOKEN_RECIEVED_MESSAGE'), 'message');
-					file_put_contents(JPATH_SITE . '/cache/plg_googleoauth/access.token', $response->access_token);
+					file_put_contents($this->accessToken, $response->access_token);
 				}
 				if (isset($response->refresh_token))
 				{
 					$this->app->enqueueMessage(JText::_('PLG_SYSTEM_GOOGLEOAUTH_GOOGLE_REFRESH_TOKEN_RECIEVED_MESSAGE'), 'message');
-					file_put_contents(JPATH_SITE . '/cache/plg_googleoauth/refresh.token', $response->refresh_token);
+					file_put_contents($this->refreshToken, $response->refresh_token);
 				}
 			}
-
 		}
 	}
 }
