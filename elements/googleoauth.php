@@ -48,6 +48,11 @@ class JElementGoogleoauth extends JElement
 		$cacheDir = $node->attributes('cachedir');
 		$cacheDir = JPATH_SITE . '/cache/' . $cacheDir;
 		$this->checkCacheDir($cacheDir);
+
+		if (!file_exists($cacheDir . '/' . $this->accessToken))
+		{
+			return $this->renderAuthLink();
+		}
 	}
 
 	private function checkCacheDir($cacheDir)
@@ -76,4 +81,19 @@ class JElementGoogleoauth extends JElement
 
 	}
 
+	private function renderAuthLink()
+	{
+		$parameters = array(
+			'client_id'     => $this->googleClientId,
+			'redirect_uri'  => $this->redirectUri,
+			'scope'         => 'https://www.googleapis.com/auth/yt-analytics.readonly',
+			'response_type' => 'code',
+			'access_type'   => 'offline'
+		);
+
+		$url   = 'https://accounts.google.com/o/oauth2/auth?';
+		$query = http_build_query($parameters);
+
+		return '<a href="' . $url . $query . '">Get Authorization Code</a><br/><br/><br/>';
+	}
 }
