@@ -21,6 +21,11 @@ class JElementDiagnostic extends JElement
 	 */
 	var $_name = 'Diagnostic';
 
+	function __construct($parent = null)
+	{
+		$this->app = JFactory::getApplication();
+	}
+
 	/**
 	 * @param $name          unique name of the parameter, from the name argument.
 	 * @param $value         current value of the parameter.
@@ -103,22 +108,18 @@ class JElementDiagnostic extends JElement
 
 			if ($messages[0])
 			{
-				$result .= '<dl id="system-message"><dt>Information</dt><dd class="message fade"><ul>';
 				foreach ($messages as $message)
 				{
-					$result .= '<li>' . $message . '</li>';
+					$this->app->enqueueMessage($message);
 				}
-				$result .= '</ul></dd></dl>';
 			}
 
 			if ($errors[0])
 			{
-				$result .= '<dl id="system-message"><dt>Errors</dt><dd class="error message fade"><ul>';
 				foreach ($errors as $error)
 				{
-					$result .= '<li>' . $error . '</li>';
+					$this->app->enqueueMessage($error, 'error');
 				}
-				$result .= '</ul></dd></dl>';
 			}
 
 			if ($result)
