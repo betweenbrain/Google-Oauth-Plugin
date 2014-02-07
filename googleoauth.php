@@ -82,5 +82,66 @@ class PlgSystemGoogleoauth extends JPlugin
 				}
 			}
 		}
+
+		$this->validateAccessToken();
+
+	}
+
+	private function validateAccessToken()
+	{
+		if (file_exists($this->accessToken))
+		{
+			$fileAge = filemtime($this->accessToken);
+			$now     = time();
+
+			if ($now - $fileAge > 3600)
+			{
+				unlink($this->accessToken);
+				$this->fetchAccessToken();
+			}
+
+			return;
+		}
+		$this->fetchAccessToken();
+	}
+
+	private function fetchAccessToken()
+	{
+
+		if (file_exists($this->refreshToken))
+		{
+
+			$url = 'https://accounts.google.com/o/oauth2/token';
+
+			$parameters = array(
+				'refresh_token' => file_get_contents($this->refreshToken),
+				'client_id'     => $this->googleClientId,
+				'client_secret' => $this->googleClientSecret,
+				'grant_type'    => 'refresh_token'
+			);
+
+			$query = http_build_query($parameters);
+
+			//open connection
+			$curl = curl_init();
+
+			// Make a POST request to get bearer token
+			curl_setopt_array($curl, Array(
+				CURLOPT_URL            => $url,
+				CURLOPT_POST           => true,
+				CURLOPT_POSTFIELDS     => $query,
+				CURLOPT_RETURNTRANSFER => 1
+			));
+
+			//execute post
+			$response = curl_exec($curl);
+
+			//close connection
+			curl_close($curl);
+
+			$response = json_decode($response, true);
+
+			file_put_contents($this->accessToken, $response['access_token']);
+		}
 	}
 }
