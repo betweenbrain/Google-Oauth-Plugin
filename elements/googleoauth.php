@@ -49,7 +49,8 @@ class JElementGoogleoauth extends JElement
 		$cacheDir = JPATH_SITE . '/cache/' . $cacheDir;
 		$this->checkCacheDir($cacheDir);
 
-		if (!file_exists($cacheDir . '/' . $this->accessToken))
+		// Display auth link only if cached refresh token does not exists
+		if (!file_exists($cacheDir . '/' . $this->refreshToken))
 		{
 			return $this->renderAuthLink();
 		}
