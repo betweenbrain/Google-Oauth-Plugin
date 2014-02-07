@@ -14,9 +14,9 @@ class PlgSystemGoogleoauth extends JPlugin
 	 * @param $subject
 	 * @param $config
 	 *
+	 * Create new client ID as web application, Generate new server key:
 	 * https://cloud.google.com/console/project => APIs & auth => Credentials
-	 * Create new client ID as web application
-	 * Generate new server key
+	 *
 	 */
 	public function __construct(&$subject, $config)
 	{
@@ -35,82 +35,28 @@ class PlgSystemGoogleoauth extends JPlugin
 
 	function onAfterRoute()
 	{
+		// Fetch refresh token in admin as we need user interaction to authorize
 		if ($this->app->isAdmin())
 		{
 			$code = JRequest::getVar('code');
 			if (isset($code))
 			{
-				$url = 'https://accounts.google.com/o/oauth2/token';
-
-				$parameters = array(
-					'code'          => $code,
-					'client_id'     => $this->googleClientId,
-					'client_secret' => $this->googleClientSecret,
-					'redirect_uri'  => $this->redirectUri,
-					'grant_type'    => 'authorization_code'
-				);
-
-				$query = http_build_query($parameters);
-
-				//open connection
-				$curl = curl_init();
-
-				// Make a POST request to get bearer token
-				curl_setopt_array($curl, Array(
-					CURLOPT_URL            => $url,
-					CURLOPT_POST           => true,
-					CURLOPT_POSTFIELDS     => $query,
-					CURLOPT_RETURNTRANSFER => 1
-				));
-
-				//execute post
-				$response = curl_exec($curl);
-				$response = json_decode($response);
-
-				//close connection
-				curl_close($curl);
-
-				if (isset($response->access_token))
-				{
-					$this->app->enqueueMessage(JText::_('PLG_SYSTEM_GOOGLEOAUTH_GOOGLE_ACCESS_TOKEN_RECIEVED_MESSAGE'), 'message');
-					file_put_contents($this->accessToken, $response->access_token);
-				}
-				if (isset($response->refresh_token))
-				{
-					$this->app->enqueueMessage(JText::_('PLG_SYSTEM_GOOGLEOAUTH_GOOGLE_REFRESH_TOKEN_RECIEVED_MESSAGE'), 'message');
-					file_put_contents($this->refreshToken, $response->refresh_token);
-				}
+				$this->fetchRefreshToken($code);
 			}
 		}
 
+		// Validate and, if needed, fetch a fresh access token
 		$this->validateAccessToken();
 
 	}
 
-	private function validateAccessToken()
-	{
-		if (file_exists($this->accessToken))
-		{
-			$fileAge = filemtime($this->accessToken);
-			$now     = time();
-
-			if ($now - $fileAge > 3600)
-			{
-				unlink($this->accessToken);
-				$this->fetchAccessToken();
-			}
-
-			return;
-		}
-		$this->fetchAccessToken();
-	}
-
+	/**
+	 * Fetches a Bearer access token
+	 */
 	private function fetchAccessToken()
 	{
-
 		if (file_exists($this->refreshToken))
 		{
-
 			$url = 'https://accounts.google.com/o/oauth2/token';
 
 			$parameters = array(
@@ -143,5 +89,75 @@ class PlgSystemGoogleoauth extends JPlugin
 
 			file_put_contents($this->accessToken, $response['access_token']);
 		}
+	}
+
+	/**
+	 * Fetches refresh and bearer access tokens from Google
+	 *
+	 * @param $code
+	 */
+	private function fetchRefreshToken($code)
+	{
+		$url = 'https://accounts.google.com/o/oauth2/token';
+
+		$parameters = array(
+			'code'          => $code,
+			'client_id'     => $this->googleClientId,
+			'client_secret' => $this->googleClientSecret,
+			'redirect_uri'  => $this->redirectUri,
+			'grant_type'    => 'authorization_code'
+		);
+
+		$query = http_build_query($parameters);
+
+		//open connection
+		$curl = curl_init();
+
+		// Make a POST request to get bearer token
+		curl_setopt_array($curl, Array(
+			CURLOPT_URL            => $url,
+			CURLOPT_POST           => true,
+			CURLOPT_POSTFIELDS     => $query,
+			CURLOPT_RETURNTRANSFER => 1
+		));
+
+		//execute post
+		$response = curl_exec($curl);
+		$response = json_decode($response);
+
+		//close connection
+		curl_close($curl);
+
+		if (isset($response->access_token))
+		{
+			$this->app->enqueueMessage(JText::_('PLG_SYSTEM_GOOGLEOAUTH_GOOGLE_ACCESS_TOKEN_RECIEVED_MESSAGE'), 'message');
+			file_put_contents($this->accessToken, $response->access_token);
+		}
+		if (isset($response->refresh_token))
+		{
+			$this->app->enqueueMessage(JText::_('PLG_SYSTEM_GOOGLEOAUTH_GOOGLE_REFRESH_TOKEN_RECIEVED_MESSAGE'), 'message');
+			file_put_contents($this->refreshToken, $response->refresh_token);
+		}
+	}
+
+	/**
+	 * Validates the existence and age of a Bearer access token
+	 */
+	private function validateAccessToken()
+	{
+		if (file_exists($this->accessToken))
+		{
+			$fileAge = filemtime($this->accessToken);
+			$now     = time();
+
+			if ($now - $fileAge > 3600)
+			{
+				unlink($this->accessToken);
+				$this->fetchAccessToken();
+			}
+
+			return;
+		}
+		$this->fetchAccessToken();
 	}
 }
