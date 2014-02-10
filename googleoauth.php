@@ -85,9 +85,9 @@ class PlgSystemGoogleoauth extends JPlugin
 			//close connection
 			curl_close($curl);
 
-			$response = json_decode($response, true);
+			$response = json_decode($response);
 
-			file_put_contents($this->accessToken, $response['access_token']);
+			file_put_contents($this->accessToken, $response->access_token);
 		}
 	}
 
