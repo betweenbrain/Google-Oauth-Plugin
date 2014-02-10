@@ -57,8 +57,6 @@ class PlgSystemGoogleoauth extends JPlugin
 	{
 		if (file_exists($this->refreshToken))
 		{
-			$url = 'https://accounts.google.com/o/oauth2/token';
-
 			$parameters = array(
 				'refresh_token' => file_get_contents($this->refreshToken),
 				'client_id'     => $this->googleClientId,
@@ -66,28 +64,13 @@ class PlgSystemGoogleoauth extends JPlugin
 				'grant_type'    => 'refresh_token'
 			);
 
-			$query = http_build_query($parameters);
+			$response = $this->makeRequest($parameters);
 
-			//open connection
-			$curl = curl_init();
+			if (isset($response->access_token))
+			{
 
-			// Make a POST request to get bearer token
-			curl_setopt_array($curl, Array(
-				CURLOPT_URL            => $url,
-				CURLOPT_POST           => true,
-				CURLOPT_POSTFIELDS     => $query,
-				CURLOPT_RETURNTRANSFER => 1
-			));
-
-			//execute post
-			$response = curl_exec($curl);
-
-			//close connection
-			curl_close($curl);
-
-			$response = json_decode($response);
-
-			file_put_contents($this->accessToken, $response->access_token);
+				file_put_contents($this->accessToken, $response->access_token);
+			}
 		}
 	}
 
@@ -98,7 +81,6 @@ class PlgSystemGoogleoauth extends JPlugin
 	 */
 	private function fetchRefreshToken($code)
 	{
-		$url = 'https://accounts.google.com/o/oauth2/token';
 
 		$parameters = array(
 			'code'          => $code,
@@ -107,6 +89,25 @@ class PlgSystemGoogleoauth extends JPlugin
 			'redirect_uri'  => $this->redirectUri,
 			'grant_type'    => 'authorization_code'
 		);
+
+		$response = $this->makeRequest($parameters);
+
+		if (isset($response->access_token))
+		{
+			$this->app->enqueueMessage(JText::_('PLG_SYSTEM_GOOGLEOAUTH_GOOGLE_ACCESS_TOKEN_RECIEVED_MESSAGE'), 'message');
+			file_put_contents($this->accessToken, $response->access_token);
+		}
+		if (isset($response->refresh_token))
+		{
+			$this->app->enqueueMessage(JText::_('PLG_SYSTEM_GOOGLEOAUTH_GOOGLE_REFRESH_TOKEN_RECIEVED_MESSAGE'), 'message');
+			file_put_contents($this->refreshToken, $response->refresh_token);
+		}
+	}
+
+	private function makeRequest($parameters)
+	{
+
+		$url = 'https://accounts.google.com/o/oauth2/token';
 
 		$query = http_build_query($parameters);
 
@@ -121,23 +122,13 @@ class PlgSystemGoogleoauth extends JPlugin
 			CURLOPT_RETURNTRANSFER => 1
 		));
 
-		//execute post
+		//execute request
 		$response = curl_exec($curl);
-		$response = json_decode($response);
 
 		//close connection
 		curl_close($curl);
 
-		if (isset($response->access_token))
-		{
-			$this->app->enqueueMessage(JText::_('PLG_SYSTEM_GOOGLEOAUTH_GOOGLE_ACCESS_TOKEN_RECIEVED_MESSAGE'), 'message');
-			file_put_contents($this->accessToken, $response->access_token);
-		}
-		if (isset($response->refresh_token))
-		{
-			$this->app->enqueueMessage(JText::_('PLG_SYSTEM_GOOGLEOAUTH_GOOGLE_REFRESH_TOKEN_RECIEVED_MESSAGE'), 'message');
-			file_put_contents($this->refreshToken, $response->refresh_token);
-		}
+		return json_decode($response);
 	}
 
 	/**
